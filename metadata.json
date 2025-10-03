@@ -1,0 +1,6 @@
+{
+  "name": "Time Traveler’s Web",
+  "description": "A fun, interactive website that lets users pick a year and experience what the internet looked and felt like in that era. The site transforms visually and content-wise based on the selected year.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
