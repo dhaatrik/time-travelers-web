@@ -277,16 +277,10 @@ const MemesDisplay: React.FC<{ memes: MemeContent[], eraTheme: EraTheme, reduceM
 interface EraContentRendererProps {
   era: EraData;
   onTriggerPopup: (title: string, message: string, isOverlay?: boolean) => void;
-  onTriggerAdvancedEasterEgg: (eggType: AdvancedEasterEggType, data?: any) => void;
+  onTriggerAdvancedEasterEgg: (eggType: AdvancedEasterEggType, data?: unknown) => void;
   mySpaceColors?: CustomizableColors;
   onMySpaceColorChange?: (colors: CustomizableColors) => void;
   reduceMotion: boolean;
-  headlinesToDisplay: string[];
-  isLoadingNews: boolean;
-  newsError: string | null;
-  adsToDisplay: AdContent[];
-  isLoadingAds: boolean;
-  adsError: string | null;
 }
 
 const EraContentRenderer: React.FC<EraContentRendererProps> = (props) => {
@@ -297,12 +291,6 @@ const EraContentRenderer: React.FC<EraContentRendererProps> = (props) => {
     mySpaceColors, 
     onMySpaceColorChange, 
     reduceMotion,
-    headlinesToDisplay,
-    isLoadingNews,
-    newsError,
-    adsToDisplay,
-    isLoadingAds,
-    adsError
   } = props;
   const [showFullContent, setShowFullContent] = useState(!era.bootUpSequence || reduceMotion);
 
@@ -370,42 +358,22 @@ const EraContentRenderer: React.FC<EraContentRendererProps> = (props) => {
       <div className={`grid grid-cols-1 ${era.year === 1991 ? '' : 'md:grid-cols-3'} gap-6 my-8`}>
         <div className={`p-4 border-2 ${theme.accentColor} rounded-md ${era.year === 1991 ? 'col-span-1' : 'md:col-span-2'}`}>
           <h3 className={`text-2xl font-semibold mb-3 border-b-2 pb-2 ${theme.accentColor} ${theme.pixelFontFamily && (era.year === 1985 || era.year === 1996) ? theme.pixelFontFamily : ''}`}>{era.year === 1991 ? 'News:' : `Headlines from ${era.year}`}</h3>
-          {isLoadingNews ? (
-             <p className={`italic ${theme.textColor} ${theme.pixelFontFamily && (era.year === 1985 || era.year === 1996) ? theme.pixelFontFamily : ''} ${reduceMotion ? '' : 'animate-pulse'}`}>
-                Fetching latest old news...
-             </p>
-          ) : newsError ? (
-            <>
-              <p className={`italic ${theme.textColor} opacity-80 ${theme.pixelFontFamily && (era.year === 1985 || era.year === 1996) ? theme.pixelFontFamily : ''}`}>{newsError}</p>
-              <ul className="space-y-2 list-disc list-inside mt-2">
-                {headlinesToDisplay.map((headline, index) => <li key={index}>{headline}</li>)}
-              </ul>
-            </>
-          ) : (
-            <ul className="space-y-2 list-disc list-inside">
-              {(headlinesToDisplay && headlinesToDisplay.length > 0 ? headlinesToDisplay : era.newsHeadlines).map((headline, index) => ( <li key={index}>{headline}</li> ))}
-            </ul>
-          )}
+          <ul className="space-y-2 list-disc list-inside">
+            {era.newsHeadlines.map((headline, index) => ( <li key={index}>{headline}</li> ))}
+          </ul>
         </div>
         <div className={`p-4 border-2 ${theme.accentColor} rounded-md`}>
           <h3 className={`text-2xl font-semibold mb-3 border-b-2 pb-2 ${theme.accentColor} ${theme.pixelFontFamily && (era.year === 1985 || era.year === 1996) ? theme.pixelFontFamily : ''}`}>Sponsored Links!</h3>
-          {isLoadingAds ? (
-            <p className={`italic ${theme.textColor} ${reduceMotion ? '' : 'animate-pulse'}`}>
-              Loading fresh advertisements...
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {adsError && <p className="text-xs italic opacity-75 mb-2">{adsError}</p>}
-              {(adsToDisplay || []).map((ad) => (
-                <div key={ad.id} className={`p-2 border ${theme.accentColor} rounded 
-                    ${ad.type === 'blinking' && !reduceMotion ? 'animate-blink-custom' : ''}
-                    ${ad.type === 'popup' ? adLinkClasses : ''} `}
-                  onClick={() => handleAdClick(ad)} role={ad.type === 'popup' ? 'button' : undefined} tabIndex={ad.type === 'popup' ? 0 : undefined} >
-                  {ad.text}
-                  {ad.type === 'popup' && <span className="text-xs block italic">(Click for details!)</span>}
-                </div> ))}
-            </div>
-          )}
+          <div className="space-y-3">
+            {era.ads.map((ad) => (
+              <div key={ad.id} className={`p-2 border ${theme.accentColor} rounded 
+                  ${ad.type === 'blinking' && !reduceMotion ? 'animate-blink-custom' : ''}
+                  ${ad.type === 'popup' ? adLinkClasses : ''} `}
+                onClick={() => handleAdClick(ad)} role={ad.type === 'popup' ? 'button' : undefined} tabIndex={ad.type === 'popup' ? 0 : undefined} >
+                {ad.text}
+                {ad.type === 'popup' && <span className="text-xs block italic">(Click for details!)</span>}
+              </div> ))}
+          </div>
         </div>
       </div>
       
