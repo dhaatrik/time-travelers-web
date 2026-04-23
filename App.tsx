@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Year, EraData, PopupContent as PopupContentType, TransitionEffectType, AdvancedEasterEggType, CustomizableColors, AdContent } from './types';
+import { Year, EraData, PopupContent as PopupContentType, TransitionEffectType, AdvancedEasterEggType, CustomizableColors } from './types';
 import { ERAS_DATA, AVAILABLE_YEARS } from './constants';
 import YearSelector from './components/YearSelector';
 import EraContentRenderer from './components/EraContentRenderer';
@@ -9,7 +9,6 @@ import TransitionOverlay from './components/TransitionOverlay';
 import MatrixEffectOverlay from './components/MatrixEffectOverlay'; 
 import RickrollOverlay from './components/RickrollOverlay'; 
 import AboutOverlay from './components/AboutOverlay';
-import { fetchEraNews, fetchEraAds } from './utils/geminiApi';
 
 
 const getInitialYear = (): Year => {
@@ -53,18 +52,9 @@ const App: React.FC = () => {
 
   const [reduceMotion, setReduceMotion] = useState<boolean>(getInitialReduceMotion());
   const [activeAdvancedEgg, setActiveAdvancedEgg] = useState<AdvancedEasterEggType | null>(null);
-  const [advancedEggData, setAdvancedEggData] = useState<any>(null);
+  const [advancedEggData, setAdvancedEggData] = useState<unknown>(null);
 
   const [mySpaceColors, setMySpaceColors] = useState<CustomizableColors>(getInitialMySpaceColors());
-
-  // State for dynamic content
-  const [currentHeadlines, setCurrentHeadlines] = useState<string[]>(ERAS_DATA[getInitialYear()].newsHeadlines);
-  const [isLoadingNews, setIsLoadingNews] = useState<boolean>(false);
-  const [newsError, setNewsError] = useState<string | null>(null);
-  const [currentAds, setCurrentAds] = useState<AdContent[]>(ERAS_DATA[getInitialYear()].ads);
-  const [isLoadingAds, setIsLoadingAds] = useState<boolean>(false);
-  const [adsError, setAdsError] = useState<string | null>(null);
-
 
   useEffect(() => {
     document.body.classList.toggle('reduce-motion-enabled', reduceMotion);
@@ -73,7 +63,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     localStorage.setItem('timeTravelerSelectedYear', String(selectedYear));
-    let newEraData = { ...ERAS_DATA[selectedYear] };
+    const newEraData = { ...ERAS_DATA[selectedYear] };
     if (selectedYear === 2005) {
       newEraData.theme = {
         ...newEraData.theme,
@@ -81,62 +71,6 @@ const App: React.FC = () => {
       };
     }
     setCurrentEraData(newEraData);
-    
-    const loadNews = async () => {
-      setIsLoadingNews(true);
-      setNewsError(null);
-      try {
-        const fetchedHeadlines = await fetchEraNews(selectedYear);
-        setCurrentHeadlines(fetchedHeadlines);
-      } catch (e: any) {
-        let userErrorMessage = "Could not fetch news. Displaying archival data.";
-        if (e.message === "API_UNAVAILABLE") {
-          userErrorMessage = "AI news service unavailable. Displaying archival data.";
-        } else if (e.message === "API_KEY_INVALID") {
-          userErrorMessage = "AI news service authentication failed. Displaying archival data.";
-        } else if (e.message === "GEMINI_API_ERROR") {
-          userErrorMessage = "Error communicating with news provider. Displaying archival data.";
-        } else if (e.message === "INVALID_NEWS_FORMAT") {
-          userErrorMessage = "Received unexpected news format. Displaying archival data.";
-        }
-        setNewsError(userErrorMessage);
-        setCurrentHeadlines(ERAS_DATA[selectedYear].newsHeadlines); // Fallback to static
-      } finally {
-        setIsLoadingNews(false);
-      }
-    };
-    
-    const loadAds = async () => {
-      setIsLoadingAds(true);
-      setAdsError(null);
-      try {
-        const fetchedAdContent = await fetchEraAds(selectedYear);
-        const staticAds = ERAS_DATA[selectedYear].ads;
-
-        const newAds = staticAds.map((ad, index) => {
-          const dynamicContent = fetchedAdContent[index];
-          if (!dynamicContent) return ad;
-          
-          return {
-            ...ad,
-            text: dynamicContent.text || ad.text,
-            popupTitle: ad.type === 'popup' ? dynamicContent.popupTitle || ad.popupTitle : undefined,
-          };
-        });
-        setCurrentAds(newAds);
-      } catch (e: any) {
-        let userErrorMessage = "Could not fetch dynamic ads. Displaying archival data.";
-        // You can add more specific error messages here if needed
-        setAdsError(userErrorMessage);
-        setCurrentAds(ERAS_DATA[selectedYear].ads); // Fallback to static
-      } finally {
-        setIsLoadingAds(false);
-      }
-    };
-
-    loadNews();
-    loadAds();
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedYear]); 
 
@@ -202,7 +136,7 @@ const App: React.FC = () => {
     if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
 
     transitionTimeoutRef.current = window.setTimeout(() => {
-      setSelectedYear(year); // This will trigger the useEffect for news fetching
+      setSelectedYear(year);
       setActivePopups([]);
       updateEraSpecificBodyStyles(newEra); 
       setIsTransitioning(false);
@@ -236,7 +170,7 @@ const App: React.FC = () => {
     setActivePopups(prev => prev.filter(p => p.id !== id));
   };
 
-  const handleAdvancedEasterEgg = useCallback((eggType: AdvancedEasterEggType, data?: any) => {
+  const handleAdvancedEasterEgg = useCallback((eggType: AdvancedEasterEggType, data?: unknown) => {
     setActiveAdvancedEgg(eggType);
     setAdvancedEggData(data);
   }, []);
@@ -264,10 +198,10 @@ const App: React.FC = () => {
   const theme = currentEraData.theme;
 
   if (activeAdvancedEgg === 'matrix') {
-    return <MatrixEffectOverlay onClose={closeAdvancedEgg} message={advancedEggData?.message || "The Matrix has you..."} />;
+    return <MatrixEffectOverlay onClose={closeAdvancedEgg} message={(advancedEggData as { message?: string })?.message || "The Matrix has you..."} />;
   }
   if (activeAdvancedEgg === 'rickroll') {
-    return <RickrollOverlay onClose={closeAdvancedEgg} videoTitle={advancedEggData?.videoTitle || "Never Gonna Give You Up"} message={advancedEggData?.message || "You've been Rickroll'd (kinda!)"} />;
+    return <RickrollOverlay onClose={closeAdvancedEgg} videoTitle={(advancedEggData as { videoTitle?: string })?.videoTitle || "Never Gonna Give You Up"} message={(advancedEggData as { message?: string })?.message || "You've been Rickroll'd (kinda!)"} />;
   }
 
   return (
@@ -276,7 +210,7 @@ const App: React.FC = () => {
       
       <header className={`sticky top-0 z-40 shadow-md ${theme.headerClasses} ${theme.font} ${theme.textColor}`}>
         <div className="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
-          <h1 className={`text-2xl sm:text-3xl font-bold mb-2 sm:mb-0 ${theme.pixelFontFamily ? theme.pixelFontFamily : ''} ${theme.useGlitterTextForHeaders ? 'glitter-text' : ''}`}>Time Traveler’s Web</h1>
+          <h1 className={`text-2xl sm:text-3xl font-bold mb-2 sm:mb-0 ${theme.pixelFontFamily ? theme.pixelFontFamily : ''} ${theme.useGlitterTextForHeaders ? 'glitter-text' : ''}`}>Time Traveler's Web</h1>
           <YearSelector selectedYear={selectedYear} onYearChange={handleYearChange} theme={theme} disabled={isTransitioning} />
         </div>
       </header>
@@ -290,12 +224,6 @@ const App: React.FC = () => {
             onMySpaceColorChange={selectedYear === 2005 ? handleMySpaceColorChange : undefined}
             mySpaceColors={selectedYear === 2005 ? mySpaceColors : undefined}
             reduceMotion={reduceMotion}
-            headlinesToDisplay={currentHeadlines}
-            isLoadingNews={isLoadingNews}
-            newsError={newsError}
-            adsToDisplay={currentAds}
-            isLoadingAds={isLoadingAds}
-            adsError={adsError}
           />
         }
       </main>
@@ -309,7 +237,7 @@ const App: React.FC = () => {
                 About This Site
             </button>
         </div>
-        <p className="mt-2">&copy; {new Date().getFullYear()} Time Traveler's Web. Not responsible for digital whiplash.</p>
+        <p className="mt-2">&copy; {new Date().getFullYear()} Dhaatrik Chowdhury. Time Traveler's Web.</p>
         {currentEraData.footerNote && <p className="text-xs italic mt-1">{currentEraData.footerNote}</p>}
         <p>Currently experiencing the web of {selectedYear}.</p>
       </footer>

@@ -1,20 +1,29 @@
 {
-  "name": "time-traveler’s-web",
+  "name": "time-travelers-web",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "An interactive single-page application that transports users to different eras of internet history.",
+  "author": "Dhaatrik Chowdhury (https://github.com/dhaatrik)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dhaatrik/time-travelers-web.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "react-dom": "18.2.0",
     "react": "18.2.0",
-    "@google/genai": "latest"
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"

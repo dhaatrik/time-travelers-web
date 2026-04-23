@@ -1,9 +1,7 @@
 
-import { Year, EraData, MemeContent } from './types';
+import { Year, EraData } from './types';
 
 export const AVAILABLE_YEARS: Year[] = [1985, 1991, 1996, 2000, 2005];
-
-// SOUNDS constant removed
 
 const IMAGES = {
   mosaicBadge: "https://via.placeholder.com/88x31.png?text=Mosaic+2.0",
